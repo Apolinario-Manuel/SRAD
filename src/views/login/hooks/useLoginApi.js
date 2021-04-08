@@ -25,13 +25,9 @@ export default function useLoginApi() {
 
       if(retorno.status === 200 && retorno.data.type !="error") {
 
-        retorno.data={
-          ...retorno.data
-        };
-
-        dataContext.setState({
-          usuario: retorno.data
-        }); 
+          dataContext.setState({
+            usuario: retorno.data.data
+          });
       }
       else{
         swal({
@@ -104,3 +100,7 @@ export default function useLoginApi() {
 
   return [logar, carregando];
 }
+
+
+
+

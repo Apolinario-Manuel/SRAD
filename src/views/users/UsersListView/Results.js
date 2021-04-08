@@ -85,40 +85,21 @@ function App() {
 
 
   useEffect(() => {
-    api.get('/users')
+    api.get('/usuarios')
       .then((res) => {
         setData(res.data);
       })
       .catch((error) => {
         console.log('Error');
       });
-
-      api.get('/concursos')
-        .then((res) => {
-          res.data.map((item, index) =>{
-            contests2 = {
-              ...contests2,
-              [`${item.id}`]: item.name
-            }
-          })
-
-          contests2 = {...contests2, [`${contests2.length}`]: "Todos"}
-
-          setContests(contests2)
-        })
-        .catch((error) => {
-          console.log('Error');
-        });
-
         
 
   }, []);
 
   const columns = [
-    { title: 'Nome', field: 'name'},
+    { title: 'Nome', field: 'nome'},
     { title: 'Email', field: 'email' },
-    { title: 'Tipo', field: 'type', render: (rowData) => <p >{rowData.type}</p> ,initialEditValue: '0', lookup: { 0: 'Master', 1: 'Júri' }},
-    { title: 'Concurso', field: 'nameContests', render: (rowData) => <p>{ (rowData.type == "Master")? "Todos" : rowData.nameContests}</p> ,initialEditValue: '0', lookup: contests},
+    { title: 'Tipo', field: 'tipo', render: (rowData) => <p >{rowData.tipo}</p> ,initialEditValue: '0', lookup: { 0: 'DM', 1: 'DP' }},
     { title: 'Senha', render: (rowData) => <Button onClick={(e)=>{handleReset(rowData)}} variant="contained" style={{backgroundColor: 'rgb(0, 90, 0)', color: 'white'}}>Reset</Button> }
   ];
   const [data, setData] = useState([]); // table data
@@ -127,12 +108,11 @@ function App() {
   const [iserror, setIserror] = useState(false);
   const [errorMessages, setErrorMessages] = useState([]);
 
-
   const handleReset = (rowData) =>{
     const da = new FormData();
     console.log("rr")
     da.append("reset", true)
-    api.post(`/users/${rowData.id}`, da)
+    api.post(`/usuarios/${rowData.id}`, da)
       .then((res) => {
         console.log(res.data);
         setSms("As alterações foram salvas com sucesso!")
@@ -153,29 +133,24 @@ function App() {
 
     if (errorList.length < 1) {
       const da = new FormData();
-    if (newData.name === undefined) {
-      errorList.push('Insira o Nome');
-    }
      
-    if (newData.type == 0)
-      da.append("type" , "Master");
-    if(newData.type == 1)
-      da.append("type" , "Júri");
+    if (newData.tipo == 0)
+      da.append("tipo" , "DM");
+    if(newData.tipo == 1)
+      da.append("tipo" , "DP");
 
-      da.append('name', newData.name);
+      da.append('nome', newData.nome);
       da.append('email', newData.email);
-      da.append('contest', newData.nameContests);
-      
-      console.log(newData.type)
-      api.post(`/users/${newData.id}`, da)
+      da.append('tipo', newData.tipo);
+
+      api.post(`/usuarios/${newData.id}`, da)
         .then((res) => {
           console.log(res);
           const dataUpdate = [...data];
           const index = oldData.tableData.id;
-          newData.name = res.data.name;
+          newData.nome = res.data.nome;
           newData.email = res.data.email;
-          newData.nameContests = res.data.nameContests;
-          newData.type = res.data.type;
+          newData.tipo = res.data.tipo;
           
           dataUpdate[index] = newData;
           setData([...dataUpdate]);
@@ -199,37 +174,24 @@ function App() {
     // validation
     const errorList = [];
    
-    if (newData.name === undefined) {
-      errorList.push('Insira o Nome');
-    }
-    if (newData.email === undefined) {
-      errorList.push('Insira o Email');
-    }
-    if (newData.type === undefined) {
-      errorList.push('Insira o Tipo');
-    }
-
     if (errorList.length < 1) { // no error
       const da = new FormData();
 
-    if (newData.type == 0)
-      da.append("type" , "Master");
-    if(newData.type == 1)
-      da.append("type" , "Júri");
+    if (newData.tipo == 0)
+      da.append("tipo" , "DM");
+    if(newData.tipo == 1)
+      da.append("tipo" , "DP");
 
-      da.append('name', newData.name);
-      da.append('contest', newData.nameContests);
+      da.append('nome', newData.nome);
       da.append('email', newData.email);
 
-      api.post('/users', da)
+      api.post('/usuarios', da)
         .then((res) => {
           console.log(res);
           const dataToAdd = [...data];
-          newData.foto = res.data.foto;
-          newData.name = res.data.name;
+          newData.nome = res.data.nome;
           newData.email = res.data.email;
-          newData.nameContests = res.data.nameContests;
-          newData.type = res.data.type;
+          newData.tipo = res.data.tipo;
           
 
           dataToAdd.push(newData);
@@ -251,7 +213,7 @@ function App() {
   };
 
   const handleRowDelete = (oldData, resolve) => {
-    api.delete(`/users/${oldData.id}`)
+    api.delete(`/usuarios/${oldData.id}`)
       .then((res) => {
         console.log(res);
         const dataDelete = [...data];

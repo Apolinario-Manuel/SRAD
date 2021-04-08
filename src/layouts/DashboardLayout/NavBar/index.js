@@ -20,7 +20,8 @@ import {
   ShoppingBag as ShoppingBagIcon,
   Clipboard as ClipboardIcon,
   Users as UsersIcon,
-  List as ListIcon
+  List as ListIcon,
+  User as UserIcon
 } from 'react-feather';
 import NavItem from './NavItem';
 
@@ -38,40 +39,46 @@ const items = [
     type: 'All'
   },
   {
-    href: '/app/concursos',
+    href: '/app/doencas',
     icon: ShoppingBagIcon,
     title: 'Doenças',
-    type: 'admin'
+    type: 'Admin'
   },
   {
     href: '/app/casos',
     icon: ClipboardIcon,
     title: 'Gerir Casos',
-    type: 'municipal'
+    type: 'DM'
   },
   {
-    href: '/app/categorias',
-    icon: ClipboardIcon,
-    title: 'Confirmados',
-    type: 'provincial'
-  },
-  {
-    href: '/app/categorias',
-    icon: ClipboardIcon,
-    title: 'Mortos',
-    type: 'provincial'
+    href: '/app/casos',
+    icon: ShoppingBagIcon,
+    title: 'Casos',
+    type: 'DP'
   },
   {
     href: '/app/categorias',
     icon: ClipboardIcon,
     title: 'Analisar Casos',
-    type: 'provincial'
+    type: 'DP'
+  },
+  {
+    href: '/app/blog',
+    icon: ClipboardIcon,
+    title: 'Blog',
+    type: 'Admin'
   },
   {
     href: '/app/users',
     icon: UsersIcon,
     title: 'Usuários',
-    type: 'admin'
+    type: 'Admin'
+  },
+  {
+    href: '/app/account',
+    icon: UserIcon,
+    title: 'Perfil',
+    type: 'All'
   },
   {
     href: '/loginAdmin',
@@ -108,23 +115,23 @@ const NavBar = ({ onMobileClose, openMobile }) => {
     name: `Apolinário Manuel`
   };
 
-  if(dataContext?.state?.usuario?.type == "provincial"){
-    user = {
-      avatar: '/static/images/avatars/avatar_3.png',
-      jobTitle: `Dr Gabinete Geral`,
-      name: `Apolinário Manuel`
-    };
-  }else if(dataContext?.state?.usuario?.type == "municipal"){
+  if(dataContext?.state?.usuario?.tipo == "DM"){
     user = {
       avatar: '/static/images/avatars/avatar_3.png',
       jobTitle: `Dr Gabinete Municipal`,
-      name: `Bento Júlio`
+      name: dataContext?.state?.usuario?.nome
     };
-  }else if(dataContext?.state?.usuario?.type == "admin"){
+  }else if(dataContext?.state?.usuario?.tipo == "DP"){
+    user = {
+      avatar: '/static/images/avatars/avatar_3.png',
+      jobTitle: `Dr Gabinete Provincial`,
+      name: dataContext?.state?.usuario?.nome
+    };
+  }else if(dataContext?.state?.usuario?.tipo == "Admin"){
     user = {
       avatar: '/static/images/avatars/avatar_3.png',
       jobTitle: `Admin`,
-      name: `Xavier Cabeto`
+      name: dataContext?.state?.usuario?.nome
     };
   }
 
@@ -174,7 +181,7 @@ const NavBar = ({ onMobileClose, openMobile }) => {
         <List>
           {items.map((item) => {
 
-            if(item.type == dataContext?.state?.usuario?.type || item.type == "All")
+            if(item.type == dataContext?.state?.usuario?.tipo || item.type == "All")
               return  (
                   <NavItem
                     onClick = {() => item.title == "Sair" ? dataContext?.setState(null): null}

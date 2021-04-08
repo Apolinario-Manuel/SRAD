@@ -38,6 +38,7 @@ import Button from '@material-ui/core/Button';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import { useNavigate } from 'react-router-dom';
+import { AppContext } from '../../views/login/hooks/context';
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -79,6 +80,7 @@ function Casos() {
   const [alertsms, setAlertsms] = useState();
   const [open, setOpen] = React.useState(false);
   const [contests, setContests] = useState({});
+  const { data: dataContext } = useContext(AppContext);
 
   let contests2 = {};
 
@@ -97,57 +99,36 @@ function Casos() {
 
 
   useEffect(() => {
-    api.get('/users')
+    api.get(`/casos/casosnome/${dataContext?.state?.usuario?.municipio}`)
       .then((res) => {
         setData(res.data);
       })
       .catch((error) => {
         console.log('Error');
       });
+    
+      api.get('/doencas')
+      .then((res) => {
 
-      api.get('/concursos')
-        .then((res) => {
-          res.data.map((item, index) =>{
-            contests2 = {
-              ...contests2,
-              [`${item.id}`]: item.name
-            }
-          })
+        let json = {}
 
-          contests2 = {...contests2, [`${contests2.length}`]: "Todos"}
-
-          setContests(contests2)
+        res.data.map((item, pos) => {
+          json = {...json, [item.id]:item.nome}
         })
-        .catch((error) => {
-          console.log('Error');
-        });
-
-        
+        setContests(json);
+      })
+      .catch((error) => {
+        console.log('Error');
+      });
 
   }, []);
 
   const columns = [
-    { title: 'Nome', field: 'name'},
-    { title: 'BI', field: 'email' },
-    { title: 'Estado', field: 'type', render: (rowData) => <p >{rowData.type}</p> ,initialEditValue: '0', lookup: { 0: 'Master', 1: 'Júri' }},
-    { title: 'Doença', field: 'nameContests', render: (rowData) => <p>{ (rowData.type == "Master")? "Todos" : rowData.nameContests}</p> ,initialEditValue: '0', lookup: contests},
-    { title: 'Opções', render: (rowData) => {
-
-      return(
-        <Flex>
-          <Button onClick={(e)=>{handleReset(rowData)}} variant="contained" style={{backgroundColor: 'rgb(0, 90, 0)', color: 'white'}}>Anular</Button>
-          <GroupButton />
-          <IconButton
-            aria-label="View"
-            onClick={() => {
-              navigate(`/app/casos/add`);
-            }}
-          >
-            <VisibilityIcon />
-          </IconButton>
-        </Flex>
-      )
-    }}
+    { title: "#", field: "id", editable: "never" },
+    { title: 'Quantidade', field: 'quantidade'},
+    { title: 'Tipo', field: 'tipo', render: (rowData) => <p >{(rowData.tipo == "M") ? "Morte": (rowData.tipo == "R") ? "Recuperado": "Activo"}</p> , initialEditValue: '0', lookup: { 0: 'Morte', 1: 'Recuperado', 2: 'Activo' }},
+    { title: 'Doença', field: 'doenca', render: (rowData) => <p>{ rowData.doenca }</p> ,initialEditValue: '0', lookup: contests},
+    { title: 'Data', field: 'date', editable: "never"},
   ];
   const [data, setData] = useState([]); // table data
 
@@ -156,61 +137,42 @@ function Casos() {
   const [errorMessages, setErrorMessages] = useState([]);
 
 
-  const handleReset = (rowData) =>{
-    const da = new FormData();
-    console.log("rr")
-    da.append("reset", true)
-    api.post(`/users/${rowData.id}`, da)
-      .then((res) => {
-        console.log(res.data);
-        setSms("As alterações foram salvas com sucesso!")
-        setAlertsms("success")
-        handleClick();
-      })
-      .catch((error) => {
-        console.log('Error');
-        setSms("Por favor verifique as informações!")
-        setAlertsms("error")
-        handleClick();
-      });
-  };
-
-
   const handleRowUpdate = (newData, oldData, resolve) => {
     // validation
     const errorList = [];
 
     if (errorList.length < 1) {
       const da = new FormData();
-    if (newData.name === undefined) {
-      errorList.push('Insira o Nome');
-    }
-     
-    if (newData.type == 0)
-      da.append("type" , "Master");
-    if(newData.type == 1)
-      da.append("type" , "Júri");
 
-      da.append('name', newData.name);
-      da.append('email', newData.email);
-      da.append('contest', newData.nameContests);
+    if (newData.tipo == 0)
+      da.append("tipo" , "M");
+    if(newData.tipo == 1)
+      da.append("tipo" , "R");
+    if(newData.tipo == 2)
+      da.append("tipo" , "A");
+
+      da.append('quantidade', newData.quantidade);
+      da.append('doenca', newData.doenca);
+      da.append('municipio', dataContext?.state?.usuario?.municipio)
+      da.append('usuario', dataContext?.state?.usuario?.id)
       
-      console.log(newData.type)
-      api.post(`/users/${newData.id}`, da)
+    
+      api.post(`/casos/${newData.id}`, da)
         .then((res) => {
-          console.log(res);
           const dataUpdate = [...data];
           const index = oldData.tableData.id;
-          newData.name = res.data.name;
-          newData.email = res.data.email;
-          newData.nameContests = res.data.nameContests;
-          newData.type = res.data.type;
+          newData.id = res.data.id;
+          newData.quantidade = res.data.quantidade;
+          newData.doenca = res.data.doenca;
+          newData.tipo = res.data.tipo;
+          newData.criado_em = res.data.criado_em;
+          newData.date = res.data.date;
           
           dataUpdate[index] = newData;
           setData([...dataUpdate]);
           resolve();
-          setIserror(false);
           setErrorMessages([]);
+          setIserror(false);
         })
         .catch((error) => {
           setErrorMessages(['Ups. Erro ao actualizar os dados...']);
@@ -228,37 +190,30 @@ function Casos() {
     // validation
     const errorList = [];
    
-    if (newData.name === undefined) {
-      errorList.push('Insira o Nome');
-    }
-    if (newData.email === undefined) {
-      errorList.push('Insira o Email');
-    }
-    if (newData.type === undefined) {
-      errorList.push('Insira o Tipo');
-    }
-
     if (errorList.length < 1) { // no error
       const da = new FormData();
 
-    if (newData.type == 0)
-      da.append("type" , "Master");
-    if(newData.type == 1)
-      da.append("type" , "Júri");
+    if (newData.tipo == 0)
+      da.append("tipo" , "M");
+    if(newData.tipo == 1)
+      da.append("tipo" , "R");
+    if(newData.tipo == 2)
+      da.append("tipo" , "A");
 
-      da.append('name', newData.name);
-      da.append('contest', newData.nameContests);
-      da.append('email', newData.email);
-
-      api.post('/users', da)
+      da.append('quantidade', newData.quantidade);
+      da.append('doenca', newData.doenca);
+      da.append('municipio', dataContext?.state?.usuario?.municipio)
+      da.append('usuario', dataContext?.state?.usuario?.id)
+      api.post(`/casos`, da)
         .then((res) => {
           console.log(res);
           const dataToAdd = [...data];
-          newData.foto = res.data.foto;
-          newData.name = res.data.name;
-          newData.email = res.data.email;
-          newData.nameContests = res.data.nameContests;
-          newData.type = res.data.type;
+          newData.id = res.data.id;
+          newData.quantidade = res.data.quantidade;
+          newData.doenca = res.data.doenca;
+          newData.tipo = res.data.tipo;
+          newData.criado_em = res.data.criado_em;
+          newData.date = res.data.date;
           
 
           dataToAdd.push(newData);
@@ -280,7 +235,7 @@ function Casos() {
   };
 
   const handleRowDelete = (oldData, resolve) => {
-    api.delete(`/users/${oldData.id}`)
+    api.delete(`/casos/${oldData.id}`)
       .then((res) => {
         console.log(res);
         const dataDelete = [...data];
@@ -372,8 +327,8 @@ function Casos() {
                 searchPlaceholder: "Pesquisar",
               },
             }}
-            options={{exportButton: true}}
-            editable={{
+
+            editable={(dataContext?.state?.usuario?.tipo == "DP") ? false : {
               onRowUpdate: (newData, oldData) => new Promise((resolve) => {
                 handleRowUpdate(newData, oldData, resolve);
               }),

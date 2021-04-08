@@ -97,11 +97,11 @@ function ContextProvider({ children }) {
 
   useEffect(() => {
     (() => {
-      if (state?.usuario?.type && !location.pathname.includes('app')) {
+      if (state?.usuario?.tipo && !location.pathname.includes('app')) {
         navigate('/app/dashboard');
       }
 
-      if (!state?.usuario.type && !location.pathname.includes('loginAdmin')) {
+      if (!state?.usuario.tipo && !location.pathname.includes('loginAdmin')) {
         navigate('/loginAdmin')
       }
     })();
