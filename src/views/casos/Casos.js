@@ -122,9 +122,19 @@ function Casos() {
       });
 
   }, []);
-
+ 
   const columns = [
-    { title: "#", field: "id", editable: "never" },
+    { title: "Estado", field: "estado", editable: "never" ,  render: (dataContext?.state?.usuario?.tipo == "DP") ? (rowData) => (
+      <>
+        <Button color="primary" variant="contained" style={{ marginRight: "5px"}}>
+          Validar
+        </Button>
+        <Button color="primary" variant="contained" style={{background: "#e83f5b"}} >
+          Invalidar
+        </Button>
+      </>
+    ): ""
+    },
     { title: 'Quantidade', field: 'quantidade'},
     { title: 'Tipo', field: 'tipo', render: (rowData) => <p >{(rowData.tipo == "M") ? "Morte": (rowData.tipo == "R") ? "Recuperado": "Activo"}</p> , initialEditValue: '0', lookup: { 0: 'Morte', 1: 'Recuperado', 2: 'Activo' }},
     { title: 'Doença', field: 'doenca', render: (rowData) => <p>{ rowData.doenca }</p> ,initialEditValue: '0', lookup: contests},

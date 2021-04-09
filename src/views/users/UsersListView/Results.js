@@ -66,7 +66,9 @@ function App() {
   const [sms, setSms] = useState();
   const [alertsms, setAlertsms] = useState();
   const [open, setOpen] = React.useState(false);
-  const [contests, setContests] = useState({});
+  const [municipio, setMunicipio] = useState();
+
+  let json = {}
 
   let contests2 = {};
 
@@ -83,6 +85,8 @@ function App() {
     setOpen(false);
   };
 
+  
+
 
   useEffect(() => {
     api.get('/usuarios')
@@ -92,13 +96,27 @@ function App() {
       .catch((error) => {
         console.log('Error');
       });
-        
+      
+      api.get('/municipios')
+      .then((res) => {
+
+        res.data.map((item, pos) => {
+          json = {...json, [item.id]:item.nome}
+        })
+        setMunicipio(json);
+      })
+      .catch((error) => {
+        console.log('Error');
+      });
 
   }, []);
+
+
 
   const columns = [
     { title: 'Nome', field: 'nome'},
     { title: 'Email', field: 'email' },
+    { title: 'Município', field: 'municipio', render: (rowData) => <p>{ rowData.municipio }</p> ,initialEditValue: '0', lookup: municipio},
     { title: 'Tipo', field: 'tipo', render: (rowData) => <p >{rowData.tipo}</p> ,initialEditValue: '0', lookup: { 0: 'DM', 1: 'DP' }},
     { title: 'Senha', render: (rowData) => <Button onClick={(e)=>{handleReset(rowData)}} variant="contained" style={{backgroundColor: 'rgb(0, 90, 0)', color: 'white'}}>Reset</Button> }
   ];
@@ -142,6 +160,7 @@ function App() {
       da.append('nome', newData.nome);
       da.append('email', newData.email);
       da.append('tipo', newData.tipo);
+      da.append('municipio', newData.municipio);
 
       api.post(`/usuarios/${newData.id}`, da)
         .then((res) => {
@@ -184,6 +203,7 @@ function App() {
 
       da.append('nome', newData.nome);
       da.append('email', newData.email);
+      da.append('municipio', newData.municipio);
 
       api.post('/usuarios', da)
         .then((res) => {
